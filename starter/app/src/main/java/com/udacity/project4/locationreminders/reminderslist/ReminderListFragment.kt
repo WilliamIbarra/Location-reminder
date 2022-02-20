@@ -9,6 +9,7 @@ import com.udacity.project4.authentication.AuthenticationActivity
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentRemindersBinding
+import com.udacity.project4.utils.LocationReminderPrefs
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import com.udacity.project4.utils.setTitle
 import com.udacity.project4.utils.setup
@@ -34,6 +35,9 @@ class ReminderListFragment : BaseFragment() {
         setTitle(getString(R.string.app_name))
 
         binding.refreshLayout.setOnRefreshListener { _viewModel.loadReminders() }
+
+        // check is login
+        checkStatus()
 
         return binding.root
     }
@@ -74,8 +78,8 @@ class ReminderListFragment : BaseFragment() {
         when (item.itemId) {
             R.id.logout -> {
 //                TODO: add the logout implementation
-                startActivity(Intent(requireContext(), AuthenticationActivity::class.java))
-                requireActivity().finish()
+                LocationReminderPrefs(requireContext()).isLogged = false
+                redirectToLogin()
             }
         }
         return super.onOptionsItemSelected(item)
@@ -86,6 +90,20 @@ class ReminderListFragment : BaseFragment() {
         super.onCreateOptionsMenu(menu, inflater)
 //        display logout as menu item
         inflater.inflate(R.menu.main_menu, menu)
+    }
+
+    private fun redirectToLogin() {
+        startActivity(Intent(requireContext(), AuthenticationActivity::class.java))
+        requireActivity().finish()
+    }
+
+    private fun checkStatus() {
+        val prefs = LocationReminderPrefs(requireContext())
+
+        if (!prefs.isLogged) {
+            redirectToLogin()
+        }
+
     }
 
 }

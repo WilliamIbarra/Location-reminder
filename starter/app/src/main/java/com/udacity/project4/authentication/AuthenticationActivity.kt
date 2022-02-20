@@ -1,5 +1,6 @@
 package com.udacity.project4.authentication
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -10,6 +11,8 @@ import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
 import com.google.firebase.auth.FirebaseAuth
 import com.udacity.project4.R
 import com.udacity.project4.databinding.ActivityAuthenticationBinding
+import com.udacity.project4.locationreminders.RemindersActivity
+import com.udacity.project4.utils.LocationReminderPrefs
 
 /**
  * This class should be the starting point of the app, It asks the users to sign in / register, and redirects the
@@ -76,7 +79,12 @@ class AuthenticationActivity : AppCompatActivity() {
             // Successfully signed in
             val user = FirebaseAuth.getInstance().currentUser
             // ...
+
+            LocationReminderPrefs(this).isLogged = true
+
             Toast.makeText(this, "Welcome $user!",Toast.LENGTH_LONG).show()
+            startActivity(Intent(this, RemindersActivity::class.java))
+            finish()
         } else {
             // Sign in failed. If response is null the user canceled the
             // sign-in flow using the back button. Otherwise check
