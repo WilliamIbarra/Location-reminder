@@ -12,25 +12,5 @@
         android:layout_height="match_parent"
         tools:context=".authentication.AuthenticationActivity">
 
-        <Button
-            android:id="@+id/btn_email"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/txt_email"
-            android:layout_marginTop="@dimen/mid_margin"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
-        <Button
-            android:id="@+id/btn_gmail"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/txt_gmail"
-            android:layout_marginTop="@dimen/mid_margin"
-            app:layout_constraintTop_toBottomOf="@id/btn_email"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

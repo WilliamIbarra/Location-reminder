@@ -45,20 +45,11 @@ class AuthenticationActivity : AppCompatActivity() {
     }
 
     private fun initFlow() {
-        setOnclickListeners()
+        addAuthenticationOptions()
     }
 
-    private fun setOnclickListeners() {
-        mBinding.btnEmail.setOnClickListener {
-            checkIsSigned()
-        }
 
-        mBinding.btnGmail.setOnClickListener {
-            checkIsSigned()
-        }
-    }
-
-    private fun checkIsSigned() {
+    private fun addAuthenticationOptions() {
         // Give users the option to sign in / register with their email or Google account.
         val providers = arrayListOf(
             AuthUI.IdpConfig.EmailBuilder().build(), // Email
