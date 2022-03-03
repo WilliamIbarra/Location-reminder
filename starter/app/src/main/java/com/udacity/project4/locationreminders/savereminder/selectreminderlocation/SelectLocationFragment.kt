@@ -2,27 +2,66 @@ package com.udacity.project4.locationreminders.savereminder.selectreminderlocati
 
 
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.os.Bundle
 import android.view.*
-import androidx.databinding.DataBindingUtil
+import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
+import com.google.android.gms.location.LocationListener
+import com.google.android.gms.maps.*
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import com.udacity.project4.R
-import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
 
-class SelectLocationFragment : BaseFragment() {
+class SelectLocationFragment : Fragment(){
 
     //Use Koin to get the view model of the SaveReminder
-    override val _viewModel: SaveReminderViewModel by inject()
+    private val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSelectLocationBinding
+    private lateinit var map: GoogleMap
+    private val locationManager: LocationManager? = null
+    private var latitude: Double? = null
+    private var longitude: Double? = null
+    private val callback = OnMapReadyCallback { googleMap ->
+        /**
+         * Manipulates the map once available.
+         * This callback is triggered when the map is ready to be used.
+         * This is where we can add markers or lines, add listeners or move the camera.
+         * In this case, we just add a marker near Sydney, Australia.
+         * If Google Play services is not installed on the device, the user will be prompted to
+         * install it inside the SupportMapFragment. This method will only be triggered once the
+         * user has installed Google Play services and returned to the app.
+         */
+        val sydney = LatLng(-34.0, 151.0)
+        map = googleMap
+        map.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
+        map.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+
+
+        enableMyLocation()
+
+
+//        val latitude = 13.965787
+//        val longitude = -89.743263
+//
+
+//
+//
+//        val overlaySize = 100f
+//        val androidOverlay = GroundOverlayOptions()
+//            .position(homeLatLng, overlaySize)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
-        binding =
-            DataBindingUtil.inflate(inflater, R.layout.fragment_select_location, container, false)
+        binding = FragmentSelectLocationBinding.inflate(inflater)
 
         binding.viewModel = _viewModel
         binding.lifecycleOwner = this
@@ -31,7 +70,10 @@ class SelectLocationFragment : BaseFragment() {
         setDisplayHomeAsUpEnabled(true)
 
 //        TODO: add the map setup implementation
+        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
+        mapFragment?.getMapAsync(callback)
 //        TODO: zoom to the user location after taking his permission
+
 //        TODO: add style to the map
 //        TODO: put a marker to location that the user selected
 
@@ -49,6 +91,7 @@ class SelectLocationFragment : BaseFragment() {
     }
 
 
+
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.map_options, menu)
     }
@@ -56,18 +99,69 @@ class SelectLocationFragment : BaseFragment() {
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         // TODO: Change the map type based on the user's selection.
         R.id.normal_map -> {
+            map.mapType = GoogleMap.MAP_TYPE_NORMAL
             true
         }
         R.id.hybrid_map -> {
+            map.mapType = GoogleMap.MAP_TYPE_HYBRID
             true
         }
         R.id.satellite_map -> {
+            map.mapType = GoogleMap.MAP_TYPE_SATELLITE
             true
         }
         R.id.terrain_map -> {
+            map.mapType = GoogleMap.MAP_TYPE_TERRAIN
             true
         }
         else -> super.onOptionsItemSelected(item)
+    }
+
+
+
+    private fun enableMyLocation() {
+
+            if (ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                ActivityCompat.requestPermissions(
+                    requireActivity(),
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    REQUEST_LOCATION_PERMISSION
+                )
+                return
+            }
+            map.isMyLocationEnabled = true
+
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray) {
+        // Check if location permissions are granted and if so enable the
+        // location data layer.
+        if (requestCode == REQUEST_LOCATION_PERMISSION) {
+            if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                enableMyLocation()
+            }
+        }
+    }
+
+    companion object {
+        private const val REQUEST_LOCATION_PERMISSION = 1
     }
 
 
