@@ -3,13 +3,15 @@ package com.udacity.project4.locationreminders.savereminder.selectreminderlocati
 
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Bundle
 import android.view.*
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
-import com.google.android.gms.location.LocationListener
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
@@ -26,8 +28,8 @@ class SelectLocationFragment : Fragment(){
     private lateinit var binding: FragmentSelectLocationBinding
     private lateinit var map: GoogleMap
     private val locationManager: LocationManager? = null
-    private var latitude: Double? = null
-    private var longitude: Double? = null
+    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+
     private val callback = OnMapReadyCallback { googleMap ->
         /**
          * Manipulates the map once available.
@@ -38,11 +40,7 @@ class SelectLocationFragment : Fragment(){
          * install it inside the SupportMapFragment. This method will only be triggered once the
          * user has installed Google Play services and returned to the app.
          */
-        val sydney = LatLng(-34.0, 151.0)
         map = googleMap
-        map.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        map.moveCamera(CameraUpdateFactory.newLatLng(sydney))
-
 
         enableMyLocation()
 
@@ -62,6 +60,8 @@ class SelectLocationFragment : Fragment(){
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = FragmentSelectLocationBinding.inflate(inflater)
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireContext())
 
         binding.viewModel = _viewModel
         binding.lifecycleOwner = this
@@ -144,6 +144,7 @@ class SelectLocationFragment : Fragment(){
                 return
             }
             map.isMyLocationEnabled = true
+            getMyLocation()
 
     }
 
@@ -156,6 +157,18 @@ class SelectLocationFragment : Fragment(){
         if (requestCode == REQUEST_LOCATION_PERMISSION) {
             if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                 enableMyLocation()
+            }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun getMyLocation() {
+        fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
+            if( location!= null){
+                val myLocation = LatLng(location.latitude, location.longitude)
+                map.addMarker(MarkerOptions().position(myLocation).title("You are here!!"))
+                map.moveCamera(CameraUpdateFactory.newLatLng(myLocation))
+
             }
         }
     }
