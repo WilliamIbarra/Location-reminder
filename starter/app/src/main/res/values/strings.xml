@@ -43,4 +43,6 @@
     <string name="txt_email">Email</string>
     <string name="txt_gmail">Gmail</string>
     <string name="txt_error_signin">Error SignIn</string>
+    <string name="txt_geofence_added">Geofence Added!</string>
+    <string name="txt_unknown_error">Unknown error: the Geofence service is not available now</string>
 </resources>
