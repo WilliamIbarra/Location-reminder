@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.view.*
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.*
@@ -48,6 +49,9 @@ class SelectLocationFragment : Fragment(){
 //        val latitude = 13.965787
 //        val longitude = -89.743263
 //
+
+        //POI click
+        setPoiClick(map)
 
 //
 //
@@ -157,6 +161,7 @@ class SelectLocationFragment : Fragment(){
         if (requestCode == REQUEST_LOCATION_PERMISSION) {
             if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                 enableMyLocation()
+                getMyLocation()
             }
         }
     }
@@ -175,6 +180,26 @@ class SelectLocationFragment : Fragment(){
 
     companion object {
         private const val REQUEST_LOCATION_PERMISSION = 1
+    }
+
+    private fun setPoiClick(map: GoogleMap) {
+        map.setOnPoiClickListener { poi ->
+            val poiMarker = map.addMarker(
+                MarkerOptions()
+                    .position(poi.latLng)
+                    .title(poi.name)
+            )
+
+            poiMarker?.showInfoWindow()
+            _viewModel.selectedPOI.value = poi
+            _viewModel.longitude.value = poi.latLng.longitude
+            _viewModel.latitude.value = poi.latLng.latitude
+            _viewModel.reminderSelectedLocationStr.value = poi.name
+
+            findNavController().popBackStack()
+
+        }
+
     }
 
 
