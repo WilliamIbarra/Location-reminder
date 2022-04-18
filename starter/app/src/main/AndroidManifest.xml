@@ -8,6 +8,7 @@
          location permissions for the 'MyLocation' functionality.
     -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> <!-- The BACKGROUND_LOCATION permission is required for geofencing functionality to work on Q+ -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -37,7 +38,7 @@
             android:value="@string/google_maps_key"  />
 
         <activity android:name=".locationreminders.ReminderDescriptionActivity" />
-        <activity android:name=".authentication.AuthenticationActivity"></activity>
+        <activity android:name=".authentication.AuthenticationActivity" />
         <activity
             android:name=".locationreminders.RemindersActivity"
             android:exported="true">
@@ -50,8 +51,7 @@
 
         <receiver
             android:name=".locationreminders.geofence.GeofenceBroadcastReceiver"
-            android:enabled="true"
-            android:exported="true" />
+            android:enabled="true" />
 
         <service
             android:name=".locationreminders.geofence.GeofenceTransitionsJobIntentService"

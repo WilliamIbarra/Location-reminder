@@ -61,11 +61,7 @@ fun sendNotification(context: Context, reminderDataItem: ReminderDataItem) {
 
 private fun getUniqueId() = ((System.currentTimeMillis() % 10000).toInt())
 
-/*
- * A Kotlin extension function for AndroidX's NotificationCompat that sends our Geofence
- * entered notification.  It sends a custom notification based on the name string associated
- * with the LANDMARK_DATA from GeofencingConstatns in the GeofenceUtils file.
- */
+
 fun NotificationManager.sendGeofenceEnteredNotification(context: Context, foundIndex: Int) {
     val contentIntent = Intent(context, MyApp::class.java)
     contentIntent.putExtra(EXTRA_GEOFENCE_INDEX, foundIndex)
