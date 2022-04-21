@@ -28,6 +28,8 @@ class SelectLocationFragment : Fragment() {
     private lateinit var map: GoogleMap
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
+    private val runningQOrLater = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
+
     private val callback = OnMapReadyCallback { googleMap ->
         /**
          * Manipulates the map once available.
@@ -111,6 +113,14 @@ class SelectLocationFragment : Fragment() {
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 REQUEST_LOCATION_PERMISSION
             )
+            if (runningQOrLater) {
+                        ActivityCompat.requestPermissions(
+                            requireActivity(),
+                            arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
+                            REQUEST_LOCATION_PERMISSION
+                        )
+            }
+            findNavController().popBackStack()
         } else {
             map.isMyLocationEnabled = true
             getMyLocation()
