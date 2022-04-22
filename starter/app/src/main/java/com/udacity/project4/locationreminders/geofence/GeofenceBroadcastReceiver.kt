@@ -40,6 +40,16 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
             if (geofencingEvent.geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
                 Log.v(TAG, context.getString(R.string.geofence_entered))
+
+                val notificationManager = ContextCompat.getSystemService(
+                    context,
+                    NotificationManager::class.java
+                ) as NotificationManager
+
+                notificationManager.sendGeofenceEnteredNotification(
+                    context, 0
+                )
+
                 val fenceId = when {
                     geofencingEvent.triggeringGeofences.isNotEmpty() ->
                         geofencingEvent.triggeringGeofences[0].requestId
@@ -49,14 +59,9 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                     }
                 }
 
-                val notificationManager = ContextCompat.getSystemService(
-                    context,
-                    NotificationManager::class.java
-                ) as NotificationManager
+                Log.e(TAG, fenceId)
 
-                notificationManager.sendGeofenceEnteredNotification(
-                    context, 1
-                )
+
             }
         }
 
