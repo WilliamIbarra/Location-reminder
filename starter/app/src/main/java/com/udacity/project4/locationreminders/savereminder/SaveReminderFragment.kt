@@ -65,43 +65,42 @@ class SaveReminderFragment : BaseFragment() {
         }
 
         binding.saveReminder.setOnClickListener {
-            val title = _viewModel.reminderTitle.value
-            val description = _viewModel.reminderDescription.value
-            val location = _viewModel.reminderSelectedLocationStr.value
-            val latitude = _viewModel.latitude.value
-            val longitude = _viewModel.longitude.value
+            val data = getData()
 
 //            TODO: use the user entered reminder details to:
 //             1) add a geofencing request
 //             2) save the reminder to the local db
 
             if(!_viewModel.validateEnteredData(ReminderDataItem(
-                    title = title,
-                    description = description,
-                    location = location,
-                    latitude = latitude,
-                    longitude = longitude
+                    title = data.title,
+                    description = data.description,
+                    location = data.location,
+                    latitude = data.latitude,
+                    longitude = data.longitude
                 ))) {
                 return@setOnClickListener
             }
 
             addGeofenceForClue(reminderDataItem = ReminderDataItem(
-                title = title,
-                description = description,
-                location = location,
-                latitude = latitude,
-                longitude = longitude
+                title = data.title,
+                description = data.description,
+                location = data.location,
+                latitude = data.latitude,
+                longitude = data.longitude
             ))
 
 
-            _viewModel.saveReminder(ReminderDataItem(
-                title = title,
-                description = description,
-                location = location,
-                latitude = latitude,
-                longitude = longitude
-            ))
         }
+    }
+
+    private fun getData() : ReminderDataItem {
+        return ReminderDataItem(
+            title = _viewModel.reminderTitle.value,
+            description = _viewModel.reminderDescription.value,
+            location = _viewModel.reminderSelectedLocationStr.value,
+            latitude = _viewModel.latitude.value,
+            longitude = _viewModel.longitude.value
+        )
     }
 
     @SuppressLint("MissingPermission")
@@ -130,6 +129,18 @@ class SaveReminderFragment : BaseFragment() {
                     addOnSuccessListener {
                         Log.e("Add Geofence", geofence.requestId)
                         //viewModel.geofenceActivated()
+
+                        val data = getData()
+
+
+                        _viewModel.saveReminder(ReminderDataItem(
+                            id = geofence.requestId,
+                            title = data.title,
+                            description = data.description,
+                            location = data.location,
+                            latitude = data.latitude,
+                            longitude = data.longitude
+                        ))
                     }
                     addOnFailureListener {
 

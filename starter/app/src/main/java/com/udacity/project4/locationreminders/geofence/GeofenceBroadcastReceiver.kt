@@ -61,6 +61,8 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
                 Log.e(TAG, fenceId)
 
+                GeofenceTransitionsJobIntentService.enqueueWork(context, intent)
+
 
             }
         }
