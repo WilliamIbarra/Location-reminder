@@ -50,12 +50,12 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
         viewModelScope.launch {
             dataSource.saveReminder(
                 ReminderDTO(
-                    reminderData.title,
-                    reminderData.description,
-                    reminderData.location,
-                    reminderData.latitude,
-                    reminderData.longitude,
-                    reminderData.id
+                    title = reminderData.title,
+                    description = reminderData.description,
+                    location = reminderData.location,
+                    latitude = reminderData.latitude,
+                    longitude = reminderData.longitude,
+                    id = reminderData.id
                 )
             )
             showLoading.value = false
