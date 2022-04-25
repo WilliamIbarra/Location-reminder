@@ -13,6 +13,7 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
 import com.udacity.project4.R
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
@@ -41,6 +42,10 @@ class SelectLocationFragment : Fragment() {
          * user has installed Google Play services and returned to the app.
          */
         map = googleMap
+
+        map.setMapStyle(
+            MapStyleOptions.loadRawResourceStyle(
+                requireContext(), R.raw.mapstyle))
 
         enableMyLocation()
 
