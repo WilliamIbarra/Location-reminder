@@ -29,7 +29,7 @@ class SelectLocationFragment : Fragment() {
     private lateinit var map: GoogleMap
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
-    private val runningQOrLater = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
+//    private val runningQOrLater = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
 
     private val callback = OnMapReadyCallback { googleMap ->
         /**
@@ -113,19 +113,16 @@ class SelectLocationFragment : Fragment() {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
+            requestPermissions(
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 REQUEST_LOCATION_PERMISSION
             )
-            if (runningQOrLater) {
-                        ActivityCompat.requestPermissions(
-                            requireActivity(),
-                            arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
-                            REQUEST_LOCATION_PERMISSION
-                        )
-            }
-            findNavController().popBackStack()
+//            if (runningQOrLater) {
+//                        requestPermissions(
+//                            arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
+//                            REQUEST_LOCATION_PERMISSION
+//                        )
+//            }
         } else {
             map.isMyLocationEnabled = true
             getMyLocation()
