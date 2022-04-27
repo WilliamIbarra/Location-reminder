@@ -15,6 +15,7 @@ import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.snackbar.Snackbar
 import com.udacity.project4.R
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
@@ -45,7 +46,9 @@ class SelectLocationFragment : Fragment() {
 
         map.setMapStyle(
             MapStyleOptions.loadRawResourceStyle(
-                requireContext(), R.raw.mapstyle))
+                requireContext(), R.raw.mapstyle
+            )
+        )
 
         enableMyLocation()
 
@@ -114,9 +117,13 @@ class SelectLocationFragment : Fragment() {
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             requestPermissions(
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ),
                 REQUEST_LOCATION_PERMISSION
             )
+            map.isMyLocationEnabled = false
 //            if (runningQOrLater) {
 //                        requestPermissions(
 //                            arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
@@ -138,9 +145,21 @@ class SelectLocationFragment : Fragment() {
         // Check if location permissions are granted and if so enable the
         // location data layer.
         if (requestCode == REQUEST_LOCATION_PERMISSION) {
-            if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+            if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED
+                        && grantResults[1] == PackageManager.PERMISSION_GRANTED)
+            ) {
                 enableMyLocation()
                 getMyLocation()
+            } else {
+                // Show a message with the alert for the default location
+                Snackbar.make(
+                    binding.root,
+                    R.string.location_required_error, Snackbar.LENGTH_LONG
+                ).setAction(android.R.string.ok) {
+                    enableMyLocation()
+                }.show()
+
+                setDefaultLocation()
             }
         }
     }
@@ -157,8 +176,16 @@ class SelectLocationFragment : Fragment() {
         }
     }
 
+    private fun setDefaultLocation() {
+        val myLocation = LatLng(DEFAULT_LATITUDE, DEFAULT_LONGITUDE)
+        map.addMarker(MarkerOptions().position(myLocation).title("Default Location!!"))
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(myLocation, 12F))
+    }
+
     companion object {
         private const val REQUEST_LOCATION_PERMISSION = 1
+        private const val DEFAULT_LATITUDE = 41.40338
+        private const val DEFAULT_LONGITUDE = 2.17403
     }
 
     private fun setPoiClick(map: GoogleMap) {
