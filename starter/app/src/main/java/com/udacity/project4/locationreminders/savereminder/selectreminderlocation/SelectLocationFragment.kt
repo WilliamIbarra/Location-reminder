@@ -15,6 +15,7 @@ import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PointOfInterest
 import com.google.android.material.snackbar.Snackbar
 import com.udacity.project4.R
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
@@ -55,6 +56,13 @@ class SelectLocationFragment : Fragment() {
 
         //POI click
         setPoiClick(map)
+
+        //The user make POIS
+        setOurPois(map)
+
+        // The user selected a Pois
+
+        setOurPoiListener(map)
 
     }
 
@@ -206,6 +214,42 @@ class SelectLocationFragment : Fragment() {
 
         }
 
+    }
+
+    private fun setOurPois(map: GoogleMap) {
+        map.setOnMapLongClickListener { latLng ->
+
+            map.clear()
+
+           val poiMarker = map.addMarker(
+                MarkerOptions()
+                    .position(latLng)
+                    .title("Custom Poi!")
+            )
+
+
+        }
+    }
+
+    private fun setOurPoiListener(map: GoogleMap) {
+        map.setOnMarkerClickListener { marker ->
+
+            val poiMarker = map.addMarker(
+                MarkerOptions()
+                    .position(marker.position)
+                    .title(marker.title)
+            )
+
+            poiMarker?.showInfoWindow()
+            _viewModel.selectedPOI.value = PointOfInterest(marker.position,marker.id, marker.title ?: "")
+            _viewModel.longitude.value = marker.position.longitude
+            _viewModel.latitude.value = marker.position.latitude
+            _viewModel.reminderSelectedLocationStr.value = marker.title
+
+            findNavController().popBackStack()
+
+            true
+        }
     }
 
 
