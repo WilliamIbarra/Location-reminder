@@ -124,6 +124,7 @@ class SaveReminderFragment : BaseFragment() {
                 reminderDataItem.longitude ?: 0.0,
                 GEOFENCE_RADIUS_IN_METERS
             )
+            .setExpirationDuration(GEOFENCE_EXPIRATION_IN_MILLISECONDS)
             .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
             .build()
 
@@ -304,5 +305,7 @@ class SaveReminderFragment : BaseFragment() {
         const val REQUEST_TURN_DEVICE_LOCATION_ON = 7
 
         const val REQUEST_LOCATION_PERMISSION = 77
+
+        val GEOFENCE_EXPIRATION_IN_MILLISECONDS: Long = TimeUnit.DAYS.toMillis(365)
     }
 }
