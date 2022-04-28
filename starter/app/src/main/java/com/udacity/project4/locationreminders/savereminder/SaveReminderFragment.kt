@@ -1,16 +1,19 @@
 package com.udacity.project4.locationreminders.savereminder
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.app.PendingIntent.*
 import android.content.Intent
 import android.content.IntentSender
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.helper.widget.MotionEffect.TAG
+import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
@@ -21,6 +24,7 @@ import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSaveReminderBinding
 import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
+import com.udacity.project4.locationreminders.savereminder.selectreminderlocation.SelectLocationFragment
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
 import java.util.concurrent.TimeUnit
@@ -30,6 +34,8 @@ class SaveReminderFragment : BaseFragment() {
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSaveReminderBinding
     private lateinit var geofencingClient: GeofencingClient
+
+    private val runningQOrLater = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
 
     private val geofencePendingIntent: PendingIntent by lazy {
         val intent = Intent(requireContext(), GeofenceBroadcastReceiver::class.java)
@@ -50,7 +56,7 @@ class SaveReminderFragment : BaseFragment() {
 
         geofencingClient = LocationServices.getGeofencingClient(requireContext())
 
-        checkDeviceLocationSettingsAndStartGeofence()
+        //checkDeviceLocationSettingsAndStartGeofence()
 
         return binding.root
     }
@@ -65,6 +71,10 @@ class SaveReminderFragment : BaseFragment() {
         }
 
         binding.saveReminder.setOnClickListener {
+
+            //Request permissions
+            enableMyLocation()
+
             val data = getData()
 
 //            TODO: use the user entered reminder details to:
@@ -123,8 +133,8 @@ class SaveReminderFragment : BaseFragment() {
             .addGeofence(geofence)
             .build()
 
-        geofencingClient.removeGeofences(geofencePendingIntent).run {
-            addOnCompleteListener {
+
+
                 geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent).run {
                     addOnSuccessListener {
                         Log.e("Add Geofence", geofence.requestId)
@@ -148,8 +158,8 @@ class SaveReminderFragment : BaseFragment() {
                             Log.w(TAG, it.message ?: "")
                         }
                     }
-                }
-            }
+
+
         }
     }
 
@@ -198,6 +208,94 @@ class SaveReminderFragment : BaseFragment() {
         }
     }
 
+    private fun enableMyLocation() {
+
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+
+
+            if (runningQOrLater) {
+                        requestPermissions(
+                            arrayOf(
+                                Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION,
+                            Manifest.permission.ACCESS_FINE_LOCATION),
+                            REQUEST_LOCATION_PERMISSION
+                        )
+            } else {
+                requestPermissions(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ),
+                    REQUEST_LOCATION_PERMISSION
+                )
+            }
+        } else {
+//            map.isMyLocationEnabled = true
+//            getMyLocation()
+        }
+
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        // Check if location permissions are granted and if so enable the
+        // location data layer.
+        if (requestCode == REQUEST_LOCATION_PERMISSION) {
+
+            if(!runningQOrLater) {
+
+            if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED
+                        && grantResults[1] == PackageManager.PERMISSION_GRANTED)
+            ) {
+                checkDeviceLocationSettingsAndStartGeofence()
+                addGeofenceForClue(getData())
+                //getMyLocation()
+            } else {
+                // Show a message with the alert for the default location
+                Snackbar.make(
+                    binding.root,
+                    R.string.location_required_error, Snackbar.LENGTH_LONG
+                ).setAction(android.R.string.ok) {
+                    enableMyLocation()
+                }.show()
+
+                //setDefaultLocation()
+            }
+
+            } else {
+                if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED
+                            && grantResults[1] == PackageManager.PERMISSION_GRANTED
+                            && grantResults[2] == PackageManager.PERMISSION_GRANTED)
+                ) {
+                    checkDeviceLocationSettingsAndStartGeofence()
+                    addGeofenceForClue(getData())
+                    //getMyLocation()
+                } else {
+                    // Show a message with the alert for the default location
+                    Snackbar.make(
+                        binding.root,
+                        R.string.location_required_error, Snackbar.LENGTH_LONG
+                    ).setAction(android.R.string.ok) {
+                        enableMyLocation()
+                    }.show()
+
+                    //setDefaultLocation()
+                }
+            }
+        }
+    }
+
     companion object {
         internal const val ACTION_GEOFENCE_EVENT =
             "SaveReminderFragment.locationReminders.action.ACTION_GEOFENCE_EVENT"
@@ -205,6 +303,8 @@ class SaveReminderFragment : BaseFragment() {
         const val GEOFENCE_RADIUS_IN_METERS = 100f
 
         const val REQUEST_TURN_DEVICE_LOCATION_ON = 7
+
+        const val REQUEST_LOCATION_PERMISSION = 77
 
         val GEOFENCE_EXPIRATION_IN_MILLISECONDS: Long = TimeUnit.HOURS.toMillis(24)
     }
