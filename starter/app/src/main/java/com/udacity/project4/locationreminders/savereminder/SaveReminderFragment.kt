@@ -2,6 +2,7 @@ package com.udacity.project4.locationreminders.savereminder
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.annotation.TargetApi
 import android.app.PendingIntent
 import android.app.PendingIntent.*
 import android.content.Intent
@@ -26,6 +27,9 @@ import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
+import android.net.Uri
+import android.provider.Settings
+import com.udacity.project4.BuildConfig
 
 class SaveReminderFragment : BaseFragment() {
     //Get the view model this time as a single to be shared with the another fragment
@@ -71,32 +75,48 @@ class SaveReminderFragment : BaseFragment() {
         binding.saveReminder.setOnClickListener {
 
             Log.e("isClicked: ", "Clicked save reminder")
-            //Request permissions
-            enableMyLocation()
+            //TODO: make validation for device location and permissions
+            checkDeviceLocationSettingsAndStartGeofence()
 
-            val data = getData()
+
+            return@setOnClickListener
+
+            //Request permissions
+            //enableMyLocation()
+            if (foregroundAndBackgroundLocationPermissionApproved()) {
+                checkDeviceLocationSettingsAndStartGeofence()
+
+                val data = getData()
 
 //            TODO: use the user entered reminder details to:
 //             1) add a geofencing request
 //             2) save the reminder to the local db
 
-            if(!_viewModel.validateEnteredData(ReminderDataItem(
-                    title = data.title,
-                    description = data.description,
-                    location = data.location,
-                    latitude = data.latitude,
-                    longitude = data.longitude
-                ))) {
-                return@setOnClickListener
-            }
+                if (!_viewModel.validateEnteredData(
+                        ReminderDataItem(
+                            title = data.title,
+                            description = data.description,
+                            location = data.location,
+                            latitude = data.latitude,
+                            longitude = data.longitude
+                        )
+                    )
+                ) {
+                    return@setOnClickListener
+                }
 
-            addGeofenceForClue(reminderDataItem = ReminderDataItem(
-                title = data.title,
-                description = data.description,
-                location = data.location,
-                latitude = data.latitude,
-                longitude = data.longitude
-            ))
+                addGeofenceForClue(
+                    reminderDataItem = ReminderDataItem(
+                        title = data.title,
+                        description = data.description,
+                        location = data.location,
+                        latitude = data.latitude,
+                        longitude = data.longitude
+                    )
+                )
+            } else {
+                enableMyLocation()
+            }
 
 
         }
@@ -196,7 +216,7 @@ class SaveReminderFragment : BaseFragment() {
         }
         locationSettingsResponseTask.addOnCompleteListener {
             if ( it.isSuccessful ) {
-
+                requestForegroundAndBackgroundLocationPermissions()
             }
         }
     }
@@ -210,90 +230,112 @@ class SaveReminderFragment : BaseFragment() {
 
     private fun enableMyLocation() {
 
-        if (ActivityCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
+        requestForegroundAndBackgroundLocationPermissions()
 
-
-            if (runningQOrLater) {
-                        requestPermissions(
-                            arrayOf(
-                                Manifest.permission.ACCESS_BACKGROUND_LOCATION,
-                            Manifest.permission.ACCESS_COARSE_LOCATION,
-                            Manifest.permission.ACCESS_FINE_LOCATION),
-                            REQUEST_LOCATION_PERMISSION
-                        )
-            } else {
-                requestPermissions(
-                    arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    ),
-                    REQUEST_LOCATION_PERMISSION
-                )
-            }
-        } else {
-//            map.isMyLocationEnabled = true
-//            getMyLocation()
-        }
 
     }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
-        permissions: Array<out String>,
+        permissions: Array<String>,
         grantResults: IntArray
     ) {
-        // Check if location permissions are granted and if so enable the
-        // location data layer.
-        if (requestCode == REQUEST_LOCATION_PERMISSION) {
+        Log.d(TAG, "onRequestPermissionResult")
 
-            if(!runningQOrLater) {
-
-            if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED
-                        && grantResults[1] == PackageManager.PERMISSION_GRANTED)
-            ) {
-                checkDeviceLocationSettingsAndStartGeofence()
-                addGeofenceForClue(getData())
-                //getMyLocation()
-            } else {
-                // Show a message with the alert for the default location
-                Snackbar.make(
-                    binding.root,
-                    R.string.location_required_error, Snackbar.LENGTH_LONG
-                ).setAction(android.R.string.ok) {
-                    enableMyLocation()
+        if (
+            grantResults.isEmpty() ||
+            grantResults[0] == PackageManager.PERMISSION_DENIED ||
+            (requestCode == REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE &&
+                    grantResults[1] ==
+                    PackageManager.PERMISSION_DENIED))
+        {
+            Snackbar.make(
+                binding.root,
+                R.string.permission_denied_explanation,
+                Snackbar.LENGTH_INDEFINITE
+            )
+                .setAction(R.string.settings) {
+                    startActivity(Intent().apply {
+                        action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                        data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    })
                 }.show()
-
-                //setDefaultLocation()
-            }
-
-            } else {
-                if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED
-                            && grantResults[1] == PackageManager.PERMISSION_GRANTED
-                            && grantResults[2] == PackageManager.PERMISSION_GRANTED)
-                ) {
-                    checkDeviceLocationSettingsAndStartGeofence()
-                    addGeofenceForClue(getData())
-                    //getMyLocation()
-                } else {
-                    // Show a message with the alert for the default location
-                    Snackbar.make(
-                        binding.root,
-                        R.string.location_required_error, Snackbar.LENGTH_LONG
-                    ).setAction(android.R.string.ok) {
-                        enableMyLocation()
-                    }.show()
-
-                    //setDefaultLocation()
-                }
-            }
+        } else {
+            saveGeofence()
         }
+    }
+
+    private fun saveGeofence() {
+        val data = getData()
+
+//            TODO: use the user entered reminder details to:
+//             1) add a geofencing request
+//             2) save the reminder to the local db
+
+        if (!_viewModel.validateEnteredData(
+                ReminderDataItem(
+                    title = data.title,
+                    description = data.description,
+                    location = data.location,
+                    latitude = data.latitude,
+                    longitude = data.longitude
+                )
+            )
+        ) {
+            return
+        }
+
+        addGeofenceForClue(
+            reminderDataItem = ReminderDataItem(
+                title = data.title,
+                description = data.description,
+                location = data.location,
+                latitude = data.latitude,
+                longitude = data.longitude
+            )
+        )
+    }
+
+
+    @TargetApi(29)
+    private fun foregroundAndBackgroundLocationPermissionApproved(): Boolean {
+        val foregroundLocationApproved = (
+                PackageManager.PERMISSION_GRANTED ==
+                        ActivityCompat.checkSelfPermission(requireContext(),
+                            Manifest.permission.ACCESS_FINE_LOCATION))
+        val backgroundPermissionApproved =
+            if (runningQOrLater) {
+                PackageManager.PERMISSION_GRANTED ==
+                        ActivityCompat.checkSelfPermission(
+                            requireContext(), Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                        )
+            } else {
+                true
+            }
+        return foregroundLocationApproved && backgroundPermissionApproved
+    }
+
+
+    @TargetApi(29 )
+    private fun requestForegroundAndBackgroundLocationPermissions() {
+        if (foregroundAndBackgroundLocationPermissionApproved()) {
+            saveGeofence()
+            return
+        }
+        var permissionsArray = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+        val resultCode = when {
+            runningQOrLater -> {
+                permissionsArray += Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE
+            }
+            else -> REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE
+        }
+        Log.d(TAG, "Request foreground only location permission")
+        requestPermissions(
+            permissionsArray,
+            resultCode
+        )
     }
 
     companion object {
@@ -304,7 +346,9 @@ class SaveReminderFragment : BaseFragment() {
 
         const val REQUEST_TURN_DEVICE_LOCATION_ON = 7
 
-        const val REQUEST_LOCATION_PERMISSION = 77
+        const val REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE = 75
+
+        const val REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE = 71
 
         const val GEOFENCE_EXPIRATION_IN_MILLISECONDS: Long = Geofence.NEVER_EXPIRE
     }
