@@ -61,6 +61,11 @@ class SingleLiveEvent<T> : MutableLiveData<T>() {
         super.setValue(t)
     }
 
+    @MainThread
+    override fun getValue(): T? {
+        return super.getValue()
+    }
+
     /**
      * Used for cases where T is Void, to make calls cleaner.
      */
