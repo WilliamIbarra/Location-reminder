@@ -1,7 +1,6 @@
 package com.udacity.project4.locationreminders.data
 
-import androidx.lifecycle.MutableLiveData
-import com.google.android.gms.tasks.Task
+
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.dto.Result
 

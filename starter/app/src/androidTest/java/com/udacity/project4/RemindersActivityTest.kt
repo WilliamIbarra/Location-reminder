@@ -1,16 +1,33 @@
 package com.udacity.project4
 
 import android.app.Application
+import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
+import androidx.test.espresso.Espresso
+import androidx.test.espresso.IdlingRegistry
+import androidx.test.espresso.IdlingResource
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.replaceText
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
+import androidx.test.rule.ActivityTestRule
+import com.udacity.project4.locationreminders.RemindersActivity
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.local.LocalDB
 import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
 import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
+import com.udacity.project4.util.DataBindingIdlingResource
+import com.udacity.project4.util.EspressoIdlingResource
+import com.udacity.project4.util.monitorActivity
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runBlockingTest
+import org.junit.After
 import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
 import org.junit.runner.RunWith
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
@@ -27,6 +44,12 @@ class RemindersActivityTest :
 
     private lateinit var repository: ReminderDataSource
     private lateinit var appContext: Application
+
+    //Add idling resources
+    private val dataBindingIdlingResource = DataBindingIdlingResource()
+
+    @get:Rule
+    var rule = ActivityTestRule(RemindersActivity::class.java)
 
     /**
      * As we use Koin as a Service Locator Library to develop our code, we'll also use Koin to test our code.
@@ -67,5 +90,43 @@ class RemindersActivityTest :
 
 
 //    TODO: add End to End testing to the app
+
+    //Idling resources
+    @Before
+    fun addIdlingResources() {
+        IdlingRegistry.getInstance().register(EspressoIdlingResource.countingIdlingResource)
+        IdlingRegistry.getInstance().register(dataBindingIdlingResource)
+    }
+
+    @After
+    fun deleteIdlingResources() {
+        IdlingRegistry.getInstance().unregister(EspressoIdlingResource.countingIdlingResource)
+        IdlingRegistry.getInstance().unregister(dataBindingIdlingResource)
+    }
+
+    @Test
+    fun createReminder() = runBlockingTest {
+        // Init Reminder Activity
+        val scenario = ActivityScenario.launch(RemindersActivity::class.java)
+        dataBindingIdlingResource.monitorActivity(scenario)
+
+        //add a reminder using add button
+        Espresso.onView(withId(R.id.addReminderFAB)).perform(click())
+
+        // open details view
+        Espresso.onView(withId(R.id.reminderTitle)).perform(replaceText("Test 1"))
+        Espresso.onView(withId(R.id.reminderDescription)).perform(replaceText("Test Description 1"))
+
+        // save reminder clicked
+        Espresso.onView(withId(R.id.saveReminder)).perform(click())
+
+        //validate is saved
+        Espresso.onView(withText("Test 1")).check(matches(isDisplayed()))
+        Espresso.onView(withText("Test Description 1")).check(matches(isDisplayed()))
+
+        //close activity
+        scenario.close()
+
+    }
 
 }
