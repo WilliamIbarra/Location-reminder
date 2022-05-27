@@ -1,9 +1,13 @@
 package com.udacity.project4.locationreminders.reminderslist
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.view.*
 import androidx.databinding.DataBindingUtil
+import com.google.android.material.snackbar.Snackbar
+import com.udacity.project4.BuildConfig
 import com.udacity.project4.R
 import com.udacity.project4.authentication.AuthenticationActivity
 import com.udacity.project4.base.BaseFragment
@@ -104,6 +108,22 @@ class ReminderListFragment : BaseFragment() {
             redirectToLogin()
         }
 
+    }
+
+
+    fun showSnackBar() {
+        Snackbar.make(
+            binding.root,
+            R.string.permission_denied_explanation,
+            Snackbar.LENGTH_INDEFINITE
+        )
+            .setAction(R.string.settings) {
+                startActivity(Intent().apply {
+                    action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                    data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                })
+            }.show()
     }
 
 }
