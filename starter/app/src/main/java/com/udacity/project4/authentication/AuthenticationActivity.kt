@@ -5,10 +5,10 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import com.firebase.ui.auth.AuthUI
-import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
-import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
-import com.google.firebase.auth.FirebaseAuth
+//import com.firebase.ui.auth.AuthUI
+//import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
+//import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
+//import com.google.firebase.auth.FirebaseAuth
 import com.udacity.project4.R
 import com.udacity.project4.databinding.ActivityAuthenticationBinding
 import com.udacity.project4.locationreminders.RemindersActivity
@@ -22,11 +22,11 @@ class AuthenticationActivity : AppCompatActivity() {
 
     private lateinit var mBinding: ActivityAuthenticationBinding
 
-    private val signInLauncher = registerForActivityResult(
-        FirebaseAuthUIActivityResultContract()
-    ) { res ->
-        this.onSignInResult(res)
-    }
+//    private val signInLauncher = registerForActivityResult(
+////        FirebaseAuthUIActivityResultContract()
+////    ) { res ->
+////        this.onSignInResult(res)
+////    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,38 +50,39 @@ class AuthenticationActivity : AppCompatActivity() {
 
 
     private fun addAuthenticationOptions() {
+        startActivity(Intent(this, RemindersActivity::class.java))
         // Give users the option to sign in / register with their email or Google account.
-        val providers = arrayListOf(
-            AuthUI.IdpConfig.EmailBuilder().build(), // Email
-            AuthUI.IdpConfig.GoogleBuilder().build() // Google
-        )
-
-        // Create and launch sign-in intent
-        val signInIntent = AuthUI.getInstance()
-            .createSignInIntentBuilder()
-            .setAvailableProviders(providers)
-            .build()
-        signInLauncher.launch(signInIntent)
+//        val providers = arrayListOf(
+//            AuthUI.IdpConfig.EmailBuilder().build(), // Email
+//            AuthUI.IdpConfig.GoogleBuilder().build() // Google
+//        )
+//
+//        // Create and launch sign-in intent
+//        val signInIntent = AuthUI.getInstance()
+//            .createSignInIntentBuilder()
+//            .setAvailableProviders(providers)
+//            .build()
+//        signInLauncher.launch(signInIntent)
     }
 
-    private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
-        val response = result.idpResponse
-        if (result.resultCode == RESULT_OK) {
-            // Successfully signed in
-            val user = FirebaseAuth.getInstance().currentUser
-            // ...
-
-            LocationReminderPrefs(this).isLogged = true
-
-            Toast.makeText(this, "Welcome $user!",Toast.LENGTH_LONG).show()
-            startActivity(Intent(this, RemindersActivity::class.java))
-            finish()
-        } else {
-            // Sign in failed. If response is null the user canceled the
-            // sign-in flow using the back button. Otherwise check
-            // response.getError().getErrorCode() and handle the error.
-            // ...
-            Toast.makeText(this, getString(R.string.txt_error_signin),Toast.LENGTH_LONG).show()
-        }
-    }
+//    private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
+//        val response = result.idpResponse
+//        if (result.resultCode == RESULT_OK) {
+//            // Successfully signed in
+//            val user = FirebaseAuth.getInstance().currentUser
+//            // ...
+//
+//            LocationReminderPrefs(this).isLogged = true
+//
+//            Toast.makeText(this, "Welcome $user!",Toast.LENGTH_LONG).show()
+//            startActivity(Intent(this, RemindersActivity::class.java))
+//            finish()
+//        } else {
+//            // Sign in failed. If response is null the user canceled the
+//            // sign-in flow using the back button. Otherwise check
+//            // response.getError().getErrorCode() and handle the error.
+//            // ...
+//            Toast.makeText(this, getString(R.string.txt_error_signin),Toast.LENGTH_LONG).show()
+//        }
+//    }
 }

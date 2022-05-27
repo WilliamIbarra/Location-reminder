@@ -13,11 +13,7 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi;
-import kotlinx.coroutines.runBlocking
-import org.hamcrest.MatcherAssert.assertThat
 import org.junit.After
-import org.junit.Test
-import com.google.common.truth.Truth.assertThat
 
 @ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
@@ -44,11 +40,5 @@ class RemindersDaoTest: TestCase() {
         database.close()
     }
 
-    @Test
-    fun writeAndReadLanguage() = runBlocking {
-        val reminder = ReminderDTO("Title1", "Description1", "Location1", 40.00, 40.00)
-        dao.saveReminder(reminder)
-        val reminders = dao.getReminders()
-        assertThat(reminders.contains(reminder)).isTrue()
-    }
+
 }
